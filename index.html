@@ -1,0 +1,339 @@
+<!doctype html>
+<html>
+
+<head>
+  <title>WordKnowers Consent & Demographic</title>
+  <script src="https://unpkg.com/@jspsych-contrib/plugin-pipe"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+  <script src="scripts/lodash/lodash.js"></script>
+  <script src="scripts/jspsych.js"></script>
+  <script src="scripts/plugins/plugin-preload.js"></script>
+  <script src="scripts/plugins/plugin-html-button-response.js"></script>
+  <script src="scripts/plugins/plugin-fullscreen.js"></script>
+  <script src="scripts/plugins/plugin-instructions.js"></script>
+  <script src="scripts/plugins/plugin-survey.js"></script>
+  <script src="scripts/plugins/plugin-survey-likert.js"></script>
+  <script src="scripts/plugins/plugin-survey-multi-select.js"></script>
+  <script src="scripts/plugins/plugin-survey-multi-choice.js"></script>
+  <script src="scripts/plugins/plugin-survey-text.js"></script>
+  <script src="scripts/plugins/plugin-audio-button-response.js"></script>
+  <script src="scripts/plugins/customs/survey-dropdown.js"></script>
+  <script src="scripts/plugins/customs/survey-multi-choice-image.js"></script>
+  <script src="scripts/plugins/customs/image-audio-button-response-prompt-position.js"></script>
+  <script src="scripts/plugins/customs/image-button-response-prompt-position.js"></script>
+  <script src="scripts/plugins/customs/video-button-response-prompt-position.js"></script>
+  <script src="expt_script/instructions_demog.js"></script>
+  <script src="expt_script/countries_languages.js"></script>
+  <link href="css/jspsych.css" type="text/css" rel="stylesheet"></link>
+  <link href="css/experiment.css" rel="stylesheet" type="text/css">
+  </link>
+</head>
+
+<body>
+  <script>
+    function shuffle(array) {
+      return _.shuffle(array);
+    }
+
+    function get_prev_answer(key) {
+      return jsPsych.data.get().last(1).values()[0].response[key];
+    }
+
+    /* initialize jsPsych */
+    var jsPsych = initJsPsych({
+      show_progress_bar: true,
+      auto_update_progress_bar: true,
+      on_finish: function(){
+        fetch("https://pipe.jspsych.org/api/data/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "*/*",
+          },
+          body: JSON.stringify({
+            experimentID: "XMD6OPXveJy8",
+            filename: `${subject_id}.json`,
+            data: JSON.stringify(jsPsych.data.get()),
+          }),
+        })
+        .then(response => {
+          // Check if the request was successful
+          if (response.ok) {
+            // Show the thank you popup
+            alert("Thank you for completing the study! Please DON'T close this message and inform the researcher.");
+          } else {
+            alert("Failed to submit data. Please inform the researcher.");
+          }
+        })
+        .catch(error => {
+          console.error("Error submitting data:", error);
+        });
+      }
+    }); 
+
+    /* create timeline */
+    var timeline = [];
+
+    var subject_id = "";
+    var filename = "";
+
+    var pid_enter = {
+      type: jsPsychSurveyText,
+      questions: [
+        {
+          prompt: "Researcher: Enter PID:",
+          name: "pid",
+          rows: 1, 
+          required: true
+        }
+      ],
+      on_finish: function(data) {
+        subject_id = data.response["pid"]
+        jsPsych.data.addProperties({subject_id: data.response["pid"]})
+        //filename = `${subject_id}.csv`;
+
+        console.log(subject_id)
+      }
+    }
+
+    timeline.push(pid_enter);
+
+    /** CONSENT FORM AND INSTRUCTIONS **/
+   var instructions = {
+      type: jsPsychInstructions,
+      pages: [
+        first_page_instruction,
+        consent_form,
+        "Thank you! Please inform the researcher that you have completed this section."],
+      show_clickable_nav: true,
+      allow_backward: true,
+      on_start: function () {
+        // set progress bar to 0 at the start of experiment
+        jsPsych.setProgressBar(0);
+      }
+    }; 
+
+    timeline.push(instructions);  
+
+    ////////////////////////////////////////////////////////////////////////
+    ///////////////////// demog Qs start from here /////////////////////////
+    ////////////////////////////////////////////////////////////////////////
+
+    // intro page
+    var demog_intro = {
+      type: jsPsychInstructions,
+      pages: demog_instr,
+      show_clickable_nav: true,
+      allow_backward: false
+    }
+
+    timeline.push(demog_intro);
+
+    /*
+    var demog_country_current = {
+      type: SurveyDropdown,
+      preamble: demog_require_answer,
+      questions: [
+        {
+          prompt: demog_current_country_instr,
+          name: 'demog_country_current',
+          options: countryList.map(country => country.name_en),
+          required: true
+        },
+      ],
+      data: {
+        demog_question: 'demog_country_current'
+      }
+    }*/
+
+    var demog_language_first = {
+      type: jsPsychSurveyMultiChoice,
+      preamble: demog_require_answer,
+      questions: [
+        {
+          prompt: demog_language_first_instr,
+          name: 'demog_language_first',
+          options: demog_language_first_opts,
+          required: true,
+        },
+      ],
+      data: {
+        demog_question: "demog_language_first"
+      },
+    };
+
+
+    var demog_language_others = {
+      type: SurveyDropdown,
+      preamble: demog_require_answer,
+      questions: [
+        {
+          prompt: demog_language_others_instr,
+          name: 'demog_language_others',
+          options: languageList.map(language => language.name_en),
+        },
+      ],
+      data: {
+        demog_question: 'demog_language_others'
+      },
+    }
+
+    function get_prev_answer(key) {
+      return jsPsych.data.get().last(1).values()[0].response[key];
+    }
+
+    var demog_language_others_fluency = {
+      type: SurveyDropdown,
+      preamble: demog_require_answer,
+      questions: [
+        {
+          prompt: function () {
+            return demog_language_others_fluency_sp + get_prev_answer('demog_language_others');
+          },
+          name: 'demog_language_others_fluency_sp',
+          options: demog_language_others_fluency_opts,
+          required: true,
+        },
+        {
+          prompt: function () {
+            return demog_language_others_fluency_ud + get_prev_answer('demog_language_others');
+          },
+          name: 'demog_language_others_fluency_ud',
+          options: demog_language_others_fluency_opts,
+          required: true,
+        }
+      ],
+      data: {
+        demog_question: 'demog_language_others_fluency',
+      }
+    }
+
+    var demog_language_others_fluency_conditional_node = {
+      timeline: [demog_language_others_fluency],
+      conditional_function: function () {
+        return (get_prev_answer("demog_language_others") != "");
+      }
+    }
+
+    var demog_language_others_loop = {
+      timeline: [demog_language_others, demog_language_others_fluency_conditional_node],
+      loop_function: function (data) {
+        return (get_prev_answer("demog_language_others") != ""); // if the previous node has demog_language_others, then continue looping. if not then stop.
+      }
+    }
+
+    var demog_age_gender = {
+      type: SurveyDropdown,
+      preamble: demog_require_answer,
+      questions: [
+        {
+          prompt: demog_age_instr,
+          name: 'demog_age',
+          options: demog_age_opts,
+          required: true,
+        },
+        {
+          prompt: demog_gender_instr,
+          name: 'demog_gender',
+          options: demog_gender_opts,
+          required: true,
+        },
+      ],
+      data: {
+        demog_question: 'demog_age_gender',
+      }
+    }
+
+    var demog_ethnic = {
+      type: jsPsychSurveyMultiSelect,
+      preamble: demog_require_answer,
+      questions: [
+        {
+          prompt: demog_ethnic_instr,
+          options: demog_ethnic_opts,
+          name: 'demog_ethnic'
+        },
+      ],
+      data: {
+        demog_question: 'demog_ethnic',
+      }
+    };
+
+    /*
+    var demog_objses = {
+      type: jsPsychSurveyMultiChoice,
+      preamble: demog_require_answer,
+      questions: [
+        {
+          prompt: demog_objective_ses_instr,
+          name: 'demog_objses',
+          options: demog_objective_ses_opts,
+        },
+      ],
+      data: {
+        demog_question: "demog_objses"
+      },
+    }
+    */
+    var demog_meta = {
+      type: jsPsychSurveyText,
+      preamble: demog_require_answer,
+      questions: [
+        {
+          prompt: demog_meta_instr,
+          name: "demog_meta",
+          rows: 5
+        }
+      ],
+      data: {
+        demog_question: "demog_meta"
+      }
+    }
+
+    var demog_final_feedback = {
+      type: jsPsychSurveyText,
+      preamble: demog_require_answer,
+      questions: [
+        {
+          prompt: demog_final_feedback_instr,
+          name: "demog_final_feedback",
+          rows: 5
+        }
+      ],
+      data: {
+        demog_question: "demog_final_feedback"
+      }
+    }
+
+    var demog_qs = [
+      //demog_country_current,
+      demog_language_first,
+      demog_language_others_loop,
+      demog_age_gender, 
+      demog_ethnic, 
+      //demog_objses,
+      demog_meta,
+      demog_final_feedback, 
+    ];
+
+    demog_qs.map(function (demog_q) {
+      if (!demog_q.data) {
+        demog_q.data = {}
+      }
+      demog_q.data.phase = "demog";
+      timeline.push(demog_q);
+    })
+
+    ////////////////////////////////////////////////////////////////////////
+    ///////////////////// SAVE DATA ////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////
+
+    /* start the experiment */
+    jsPsych.run(timeline);
+
+
+
+  </script>
+</body>
+
+</html>

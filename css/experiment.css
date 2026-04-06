@@ -1,0 +1,85 @@
+/*
+Things specific to this tutorial,
+including how to centralize your stimuli 
+using a parent and child class!
+*/
+
+body {
+    text-align: center;
+    font-family: Helvetica, Verdana, Arial, sans-serif;
+}
+
+#legal {
+    font-size: 0.8em;
+}
+
+#instruction {
+    padding-block: 1%;
+}
+
+.jspsych-content {
+    max-width: 100%;
+  }
+
+#jspsych-image-button-response-prompt {
+    padding-left: 10%;
+    padding-right: 10%;
+}
+
+.jspsych-survey-likert-opts li input[type=radio] {
+    width: 1.5em;
+    height: 2em;
+    margin-left: -8px !important;
+}
+
+.jspsych-btn { 
+    margin: 10px;
+}
+
+.jspsych-survey-likert-opts:before {
+    top: 18px !important;
+}
+
+.jspsych-survey-multi-choice-option-left {
+    margin-right: 150px !important;
+}
+
+.jspsych-survey-multi-choice-option-right {
+    margin-left: 150px !important;
+}
+
+
+#jspsych-image-button-response-stimulus {
+    margin: 10px !important;
+}
+
+#jspsych-video-button-response-stimulus {
+    margin: 10px !important;
+}
+
+.jspsych-image-button-response-button > button {
+    margin: 0px !important;
+}
+
+.parent {
+    position:absolute;
+    top:0;
+    left:0;
+    right:0;     
+    width: 75%;
+    height: 100%;
+    display: table;
+    margin-left: auto;
+    margin-right: auto;    
+}
+.child {
+    display: table-cell;
+    vertical-align: middle;
+
+    margin-left: auto;
+    margin-right: auto;    
+}
+
+.jspsych-categorize-stimulus {
+    vertical-align: middle
+}
