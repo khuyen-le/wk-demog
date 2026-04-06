@@ -96,7 +96,8 @@ demog_objective_ses_instr = `What is the highest degree or level of school you h
 demog_objective_ses_opts = ['8th grade/junior high or less', 'Some high school', 'High school graduate/GED', 'One or more years of college, no degree', 'Two-year college degree/vocational school', "Four-/Five-year college Bachelor's degree", 'At least some graduate school']
 
 demog_final_feedback_instr = "Were any parts of this experiment confusing?<p></p>We highly appreciate your feedback!"
-demog_meta_instr = "How did you choose which character knows each word? When both characters provided different names for a new object, how did you decide the name of that object?"
+demog_meta_instr = `How did you choose which character knows each word? <br>
+                    When both characters provided different names for a new object, how did you decide the name of that object?<font color="brown">*</font>`
 
 demog_pid_instr = `Please enter the last 4 digits of your PID. We will use this to verify your responses.<font color="brown">*</font>`
 
